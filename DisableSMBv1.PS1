@@ -1,16 +1,25 @@
 <#
+.SYNOPSIS
+    Disables the SMBv1 protocol on a Windows system.
 
-Disables SMBv1, do not do if you have older OS's such as 2003 Servers or Windows XP :(
-SMBv1 is older and has quite a few exploits such as Eternal Blue, it has been replaced by SMBv2 and SMBv3 on newer systems.
+.DESCRIPTION
+    This function checks if SMBv1 is enabled and, if so, disables it. SMBv1 is a legacy 
+    protocol with known vulnerabilities and should be avoided if possible.
 
+.EXAMPLE
+    Disable-SMBv1  # Runs the function to disable SMBv1
 #>
+function Disable-SMBv1 {
+    # Get the current state of the SMBv1 feature
+    $SMBv1State = Get-WindowsOptionalFeature -Online -FeatureName smb1protocol
 
-#Gets information about SMBv1
-$SMBv1State = Get-WindowsOptionalFeature -Online -FeatureName smb1protocol
-
-
-#Checks if it is disabled
-If ($SMBv1State.State -ne "Disabled") {
-    #Disables SMBv1
-    Disable-WindowsOptionalFeature -Online -FeatureName smb1protocol
+    # Check if SMBv1 is already disabled
+    if ($SMBv1State.State -ne "Disabled") {
+        Write-Verbose "SMBv1 is currently enabled. Disabling..."
+        # Disable the SMBv1 feature (this requires a system restart)
+        Disable-WindowsOptionalFeature -Online -FeatureName smb1protocol -NoRestart 
+        Write-Warning "SMBv1 has been disabled. A system restart is required to complete the change."
+    } else {
+        Write-Verbose "SMBv1 is already disabled."
+    }
 }

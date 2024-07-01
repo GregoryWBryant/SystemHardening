@@ -1,10 +1,19 @@
 <#
-Disables NetBios
-Netbios is a legacy protocol. It is very chatty with lots of broadcasts and when used with its defaults settings, it can be used by the bad guys to gather information about your network for further attacks.
+    Disables NetBios
+
+    Why disable NetBios
+        Legacy protocol: Outdated and no longer needed in most modern networks.
+        Security risk: Generates excessive network traffic and can expose information about your systems to potential attackers.
 #>
 
-#Get a list of all network interfaces
-$Interfaces = "HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces"
+# Get the base registry path for NetBIOS interface settings
+$InterfaceBasePath = "HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces"
 
-#Loops through and updates each to disable NetBios
-Get-ChildItem $Interfaces | foreach { Set-ItemProperty -Path "$regkey\$($_.pschildname)" -Name NetbiosOptions -Value 2 -Verbose}
+# Loop through each network interface found in the registry
+Get-ChildItem $InterfaceBasePath | ForEach-Object { 
+    # Construct the full registry path for the current interface
+    $regkey = "$InterfaceBasePath\$($_.pschildname)"
+    
+    # Set the NetbiosOptions value to 2 (disabled)
+    Set-ItemProperty -Path $regkey -Name NetbiosOptions -Value 2 -Verbose
+} 
